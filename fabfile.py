@@ -131,14 +131,14 @@ def setup_webpack_react_redux(working_dir):
             # entire kitchen sink
             if not fabfiles.exists("node_modules/babel-preset-es2015"):
                 run("npm i babel-core babel-loader babel-preset-es2015 " + \
-                    "babel-preset-react -S")
+                    "babel-preset-react-app -S")
 
             # Tells babel-loader which presets to load.
             if not fabfiles.exists(".babelrc"):
                 run("touch .babelrc")
                 fabfiles.append(".babelrc",
                                 "{\n" +
-                                "  \"presets\" : [\"es2015\", \"react\"]\n" +
+                                "  \"presets\" : [\"es2015\", \"react-app\"]\n" +
                                 "}\n")
 
             # Tells webpack to look at APP_DIR/index.jsx as starting point
@@ -161,7 +161,7 @@ def setup_webpack_react_redux(working_dir):
                     "      {\n" +
                     "        test : /\.jsx?/,\n" + # Test all js, jsx files
                     "        include : APP_DIR,\n" +
-                    "        loader : 'babel'\n" +
+                    "        loader : 'babel-loader'\n" +
                     "      }\n" +
                     "    ]\n" +
                     "  }\n" +
@@ -227,10 +227,13 @@ class AwesomeComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {likesCount : 0};
-    this.onLike = this.onLike.bind(this);
+    //this.onLike = this.onLike.bind(this);
   }
 
-  onLike () {
+  // Fat arrow operator binds this which makes it unnecessary to explicitly 
+  // bind in constructor
+  // onLike() {...} turns into onLike = () => {...}
+  onLike = () => {
     let newLikesCount = this.state.likesCount + 1;
     this.setState({likesCount: newLikesCount});
   }
