@@ -131,14 +131,14 @@ def setup_webpack_react_redux(working_dir):
             # entire kitchen sink
             if not fabfiles.exists("node_modules/babel-preset-es2015"):
                 run("npm i babel-core babel-loader babel-preset-es2015 " + \
-                    "babel-preset-react-app -S")
+                    "babel-preset-react babel-preset-stage-0 -S")
 
             # Tells babel-loader which presets to load.
             if not fabfiles.exists(".babelrc"):
                 run("touch .babelrc")
                 fabfiles.append(".babelrc",
                                 "{\n" +
-                                "  \"presets\" : [\"es2015\", \"react-app\"]\n" +
+                                "  \"presets\" : [\"es2015\", \"react\", \"stage-0\"]\n" +
                                 "}\n")
 
             # Tells webpack to look at APP_DIR/index.jsx as starting point
