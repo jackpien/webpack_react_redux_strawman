@@ -112,8 +112,8 @@ def setup_webpack_react_redux(working_dir):
                 # --devtool source-map allows us to debug in browser the
                 # pre translated JSX files
                 package_dict["scripts"] = { \
-                        "dev": "webpack -d --devtool source-map  --watch",
-                        "build" : "webpack -p"
+                        "dev": "NODE_ENV=development webpack -d --devtool source-map  --watch",
+                        "build" : "NODE_ENV=production webpack -p"
                 }
             
                 run("rm package.json")
@@ -125,7 +125,7 @@ def setup_webpack_react_redux(working_dir):
 
             if not fabfiles.exists("node_modules/.bin/webpack"):
                 # -S saves to package.json dependencies - like requirements.txt
-                run("npm i webpack -S")
+                run("npm i webpack webpack-cli -S")
 
             # Just test one babel module to see if we need to install the
             # entire kitchen sink
@@ -157,7 +157,7 @@ def setup_webpack_react_redux(working_dir):
                     "    filename: 'bundle.js'\n" +
                     "  },\n" +
                     "  module : {\n" +
-                    "    loaders : [\n" +
+                    "    rules : [\n" +
                     "      {\n" +
                     "        test : /\.jsx?/,\n" + # Test all js, jsx files
                     "        include : APP_DIR,\n" +
