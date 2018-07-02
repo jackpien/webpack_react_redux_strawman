@@ -112,6 +112,7 @@ def setup_webpack_react_redux(working_dir):
                 # --devtool source-map allows us to debug in browser the
                 # pre translated JSX files
                 package_dict["scripts"] = { \
+                        "start": "webpack-dev-server --config ./webpack.config.js --mode development",
                         "dev": "NODE_ENV=development webpack -d --devtool source-map  --watch",
                         "build" : "NODE_ENV=production webpack -p"
                 }
@@ -125,7 +126,7 @@ def setup_webpack_react_redux(working_dir):
 
             if not fabfiles.exists("node_modules/.bin/webpack"):
                 # -S saves to package.json dependencies - like requirements.txt
-                run("npm i webpack webpack-cli -S")
+                run("npm i webpack webpack-dev-server webpack-cli -S")
 
             # Just test one babel module to see if we need to install the
             # entire kitchen sink
@@ -137,36 +138,46 @@ def setup_webpack_react_redux(working_dir):
             if not fabfiles.exists(".babelrc"):
                 run("touch .babelrc")
                 fabfiles.append(".babelrc",
-                                "{\n" +
-                                "  \"presets\" : [\"es2015\", \"react\", \"stage-0\"]\n" +
-                                "}\n")
+                                """
+{
+  "presets" : ["es2015", "react", "stage-0"]
+}
+                                """)
 
             # Tells webpack to look at APP_DIR/index.jsx as starting point
             # to bundle everything into BUILD_DIR/bundle.js
             if not fabfiles.exists("webpack.config.js"):
                 run("touch webpack.config.js")
                 fabfiles.append("webpack.config.js",
-                    "var webpack = require('webpack');\n" +
-                    "var path = require('path');\n\n" +
-                    "var BUILD_DIR = path.resolve(__dirname, 'src/client/public');\n" +
-                    "var APP_DIR = path.resolve(__dirname, 'src/client/app');\n\n"+
-                    "var config = {\n" +
-                    "  entry: APP_DIR + '/index.jsx',\n" +
-                    "  output: {\n" +
-                    "    path: BUILD_DIR,\n" +
-                    "    filename: 'bundle.js'\n" +
-                    "  },\n" +
-                    "  module : {\n" +
-                    "    rules : [\n" +
-                    "      {\n" +
-                    "        test : /\.jsx?/,\n" + # Test all js, jsx files
-                    "        include : APP_DIR,\n" +
-                    "        loader : 'babel-loader'\n" +
-                    "      }\n" +
-                    "    ]\n" +
-                    "  }\n" +
-                    "};\n\n"
-                    "module.exports = config;")
+                                """
+var webpack = require('webpack');
+var path = require('path');
+
+var BUILD_DIR = path.resolve(__dirname, 'src/client/public');
+var APP_DIR = path.resolve(__dirname, 'src/client/app');
+
+var config = {
+  entry: APP_DIR + '/index.jsx',
+  output: {
+    path: BUILD_DIR,
+    filename: 'bundle.js'
+  },
+  module : {
+    rules : [
+      {
+        test : /\.jsx?/,
+        include : APP_DIR,
+        loader : 'babel-loader'
+      }
+    ]
+  },
+  devServer: {
+    contentBase: BUILD_DIR
+  }
+};
+
+module.exports = config;
+                                """)
 
             if not fabfiles.exists("src/client"):
                 run("mkdir -p src/client/public")
@@ -174,11 +185,11 @@ def setup_webpack_react_redux(working_dir):
 
             # Do we have react installed
             if not fabfiles.exists("node_modules/react"):
-                run("npm install react react-dom -S")
+                run("npm install react react-dom react-hot-loader -S")
                 
             # Main html file
-            if not fabfiles.exists("src/client/index.html"):
-                with cd("src/client"):
+            if not fabfiles.exists("src/client/public/index.html"):
+                with cd("src/client/public"):
                     run("touch index.html")
                     fabfiles.append("index.html",
                                     "<html>\n" +
@@ -188,7 +199,7 @@ def setup_webpack_react_redux(working_dir):
                                     "</head>\n" +
                                     "<body>\n" +
                                     "<div id=\"app\" />\n" +
-                                    "<script src=\"public/bundle.js\" type=\"text/javascript\"></script>\n" +
+                                    "<script src=\"bundle.js\" type=\"text/javascript\"></script>\n" +
                                     "</body>\n" +
                                     "</html>")
 
@@ -211,7 +222,9 @@ class App extends React.Component {
   }
 }
 
-render(<App/>, document.getElementById('app')); 
+render(<App/>, document.getElementById('app'));
+
+module.hot.accept(); 
                                     """)
 
             # Other JSX components

@@ -1,3 +1,4 @@
+
 var webpack = require('webpack');
 var path = require('path');
 
@@ -18,7 +19,11 @@ var config = {
         loader : 'babel-loader'
       }
     ]
+  },
+  devServer: {
+    contentBase: BUILD_DIR
   }
 };
 
 module.exports = config;
+                                
